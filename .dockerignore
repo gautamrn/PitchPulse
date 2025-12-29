@@ -1,0 +1,41 @@
+# .dockerignore works like .gitignore but for Docker builds
+# Prevents these files from being copied into the container image
+# Result: Smaller images, faster builds, no accidental secret leaks
+
+# Virtual environments (container has its own Python env)
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache (will be regenerated inside container)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Git (don't need version control inside container)
+.git/
+.gitignore
+
+# IDE settings (personal dev tools, not needed in container)
+.vscode/
+.idea/
+
+# Documentation (not needed at runtime)
+*.md
+PRD.md
+ROADMAP.md
+QUICKSTART.md
+
+# Tests (keep image small - tests run in CI/CD, not in production container)
+tests/
+
+# Environment files (secrets should be passed at runtime via -e flag)
+.env
+.env.*
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
