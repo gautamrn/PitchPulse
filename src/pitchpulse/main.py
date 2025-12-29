@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-
-# TODO (Step 3): Import routers when created
-# from src.pitchpulse.routers import matches, players, teams
+from src.pitchpulse.routers import players
 
 app = FastAPI(
     title="PitchPulse",
@@ -9,10 +7,9 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# TODO (Step 3): Include routers
-# app.include_router(matches.router, prefix="/matches", tags=["matches"])
-# app.include_router(players.router, prefix="/players", tags=["players"])
-# app.include_router(teams.router, prefix="/teams", tags=["teams"])
+# Register players router
+# This creates all /players/* endpoints
+app.include_router(players.router, prefix="/players", tags=["players"])
 
 
 @app.get("/")
