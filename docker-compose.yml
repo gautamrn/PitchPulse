@@ -35,11 +35,9 @@ services:
       - pitchpulse-network
     restart: unless-stopped
 
-# Network for inter-container communication
 networks:
   pitchpulse-network:
     driver: bridge
 
-# Persistent storage for Redis data
 volumes:
   redis_data:

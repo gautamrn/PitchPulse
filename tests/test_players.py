@@ -38,9 +38,12 @@ def mock_api_football_response():
     }
 
 
+@patch("src.pitchpulse.clients.cache.RedisCache.get")
+@patch("src.pitchpulse.clients.cache.RedisCache.set")
 @patch("src.pitchpulse.clients.api_football.APIFootballClient.get_player_stats")
-def test_get_player_stats_success(mock_get_stats, mock_api_football_response):
-
+def test_get_player_stats_success(mock_get_stats, mock_cache_set, mock_cache_get, mock_api_football_response):
+    # Mock cache miss (no cached data)
+    mock_cache_get.return_value = None
     mock_get_stats.return_value = mock_api_football_response
 
     response = client.get("/players/276/stats?season=2024")
@@ -58,9 +61,10 @@ def test_get_player_stats_success(mock_get_stats, mock_api_football_response):
     assert data["goals_per_90"] == expected_goals_per_90
 
 
+@patch("src.pitchpulse.clients.cache.RedisCache.get")
 @patch("src.pitchpulse.clients.api_football.APIFootballClient.get_player_stats")
-def test_get_player_stats_not_found(mock_get_stats):
-
+def test_get_player_stats_not_found(mock_get_stats, mock_cache_get):
+    mock_cache_get.return_value = None
     mock_get_stats.return_value = {"response": []}
 
     response = client.get("/players/99999/stats")
@@ -69,10 +73,12 @@ def test_get_player_stats_not_found(mock_get_stats):
     assert "Player not found" in response.json()["detail"]
 
 
+@patch("src.pitchpulse.clients.cache.RedisCache.get")
+@patch("src.pitchpulse.clients.cache.RedisCache.set")
 @patch("src.pitchpulse.clients.api_football.APIFootballClient.get_player_stats")
-def test_get_player_stats_zero_minutes(mock_get_stats):
+def test_get_player_stats_zero_minutes(mock_get_stats, mock_cache_set, mock_cache_get):
     """Test player with 0 minutes played (avoid division by zero)"""
-
+    mock_cache_get.return_value = None
     mock_get_stats.return_value = {
         "response": [
             {
