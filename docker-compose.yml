@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: pitchpulse-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - pitchpulse-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pitchpulse-app
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+      - API_FOOTBALL_KEY=${API_FOOTBALL_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - pitchpulse-network
+    restart: unless-stopped
+
+# Network for inter-container communication
+networks:
+  pitchpulse-network:
+    driver: bridge
+
+# Persistent storage for Redis data
+volumes:
+  redis_data:

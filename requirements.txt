@@ -3,8 +3,10 @@ fastapi==0.115.6
 uvicorn[standard]==0.34.0
 pydantic-settings==2.7.1
 
-# Async HTTP client for API-Football integration (Step 3)
+# Async HTTP client for API-Football integration
 httpx==0.28.1
+
+redis==5.0.1
 
 # Testing
 pytest==8.3.4
