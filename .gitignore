@@ -33,6 +33,10 @@ ENV/
 .env.local
 .env.*.local
 
+# AWS configuration files with secrets
+ecs-task-definition.json
+ecs-task-trust-policy.json
+
 # IDE
 .vscode/
 .idea/
