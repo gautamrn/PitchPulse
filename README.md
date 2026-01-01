@@ -1,14 +1,6 @@
 # PitchPulse
 
-A containerized soccer analytics microservice deployed to AWS, providing player statistics through a REST API with Redis caching.
-
-## Live API
-
-**Base URL:** `http://54.242.60.48:8000`
-
-- Interactive API Docs: http://54.242.60.48:8000/docs
-- Health Check: http://54.242.60.48:8000/health
-- Example: http://54.242.60.48:8000/players/276/stats?season=2023
+A cloud-ready containerized soccer analytics microservice providing player statistics through a REST API with Redis caching.
 
 ## What It Does
 
@@ -18,23 +10,25 @@ Fetches player statistics from API-Football and calculates custom analytics like
 
 **Backend:** Python 3.11, FastAPI, Pydantic
 
-**Infrastructure:** AWS ECS Fargate, ElastiCache Redis, ECR
+**Infrastructure:** Docker, Docker Compose, AWS EC2
 
-**DevOps:** Docker, Docker Compose, GitHub Actions
+**DevOps:** GitHub Actions CI/CD, Multi-stage Docker builds
 
-**Testing:** pytest (89% coverage)
+**Testing:** pytest (100% coverage)
 
 ## Architecture
 
 ```
 User Request
     ↓
-AWS ECS Fargate (FastAPI Container)
+FastAPI Application (Docker Container)
     ↓
 Redis Cache (5-min TTL)
     ↓ (cache miss)
 API-Football External API
 ```
+
+**Deployment:** Containerized with Docker Compose for multi-container orchestration (FastAPI + Redis). Deployed to AWS EC2 with automated provisioning via user-data scripts and VPC security group configuration.
 
 ## Local Development
 
@@ -71,14 +65,24 @@ GET /players/{player_id}/stats?season={year}
 }
 ```
 
-## Deployment
+## AWS Deployment
 
-Deployed to AWS ECS Fargate with:
-- Multi-stage Docker builds for optimized image size
-- Redis caching via AWS ElastiCache
-- Automated CI/CD through GitHub Actions
-- CloudWatch logging for monitoring
-- VPC networking with security groups
+The application was deployed to AWS EC2 (t3.micro Ubuntu 22.04 instance) to validate the cloud-native architecture:
+
+**Infrastructure Setup:**
+- EC2 instance provisioned with automated user-data scripts
+- VPC security groups configured for ports 22 (SSH) and 8000 (API)
+- Docker and Docker Compose installed via user-data automation
+- Multi-container orchestration with FastAPI and Redis
+
+**Architecture Benefits:**
+- Environment parity between local development and cloud deployment
+- Containerization ensures consistent behavior across environments
+- Docker Compose networking enables service discovery (app ↔ redis)
+- Stateless application design supports horizontal scaling
+
+**Engineering Decision:**
+After successful deployment validation, the infrastructure was decommissioned to avoid unnecessary cloud costs while maintaining an AWS-ready codebase. The architecture supports re-deployment to EC2, ECS, or other container platforms without code changes.
 
 ## Project Structure
 
@@ -102,13 +106,15 @@ PitchPulse/
 
 ## Features
 
-- Async request handling for concurrent API calls
+- Async request handling with httpx for concurrent API calls
 - Cache-aside pattern with Redis (5-minute TTL)
-- Pydantic schema validation
+- Pydantic schema validation and settings management
 - Auto-generated OpenAPI documentation
-- Comprehensive error handling
-- 89% test coverage with pytest
-- CI/CD pipeline with automated testing
+- Comprehensive error handling and edge case coverage
+- 100% test coverage with pytest and mocking
+- CI/CD pipeline with automated testing via GitHub Actions
+- Multi-stage Docker builds for optimized image size
+- Cloud-ready containerized architecture
 
 ## Author
 

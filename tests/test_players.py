@@ -99,3 +99,41 @@ def test_get_player_stats_zero_minutes(mock_get_stats, mock_cache_set, mock_cach
     assert response.status_code == 200
     data = response.json()
     assert data["goals_per_90"] == 0.0
+
+
+@patch("src.pitchpulse.clients.cache.RedisCache.get")
+def test_get_player_stats_cache_hit(mock_cache_get):
+    """Test that cached data is returned without calling the API"""
+    cached_response = {
+        "player_id": 276,
+        "player_name": "Erling Haaland",
+        "team": "Manchester City",
+        "position": "Attacker",
+        "games_played": 35,
+        "minutes_played": 3024,
+        "goals": 36,
+        "assists": 8,
+        "goals_per_90": 1.07
+    }
+    mock_cache_get.return_value = cached_response
+
+    response = client.get("/players/276/stats?season=2024")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data == cached_response
+    # Verify cache.get was called
+    mock_cache_get.assert_called_once()
+
+
+@patch("src.pitchpulse.clients.cache.RedisCache.get")
+@patch("src.pitchpulse.clients.api_football.APIFootballClient.get_player_stats")
+def test_get_player_stats_api_error(mock_get_stats, mock_cache_get):
+    """Test handling of API errors"""
+    mock_cache_get.return_value = None
+    mock_get_stats.side_effect = Exception("API connection failed")
+
+    response = client.get("/players/276/stats")
+
+    assert response.status_code == 500
+    assert "Failed to fetch player stats" in response.json()["detail"]
